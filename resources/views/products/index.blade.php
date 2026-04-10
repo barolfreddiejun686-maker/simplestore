@@ -1,11 +1,39 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Product Page') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
+@section('title', 'Products')
+@section('content')
+<div class="container">
+    <h2>Product List</h2>
 
-    <div class="py-12">
- 
-    </div>
-</x-app-layout>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @forelse($products as $product)
+                <tr>
+                    <td>{{ $product->name }}</td>
+
+                    <td>
+                        {{ $product->category?->name ?? 'No Category' }}
+                    </td>
+
+                    <td>{{ $product->price }}</td>
+                    <td>{{ $product->stock }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="4">No products found</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    {{ $products->links() }}
+</div>
+@endsection

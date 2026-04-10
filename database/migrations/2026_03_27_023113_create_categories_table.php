@@ -8,6 +8,7 @@ public function up(): void
 Schema::create('categories', function (Blueprint $table) {
 $table->id();
 $table->string('name');
+$table->text('description')->nullable()->after('name');
 $table->string('slug')->unique();
 $table->timestamps();
 });

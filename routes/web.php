@@ -1,6 +1,10 @@
 <?php
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,33 +20,35 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-}); 
+    // Dashboard redirect based on role
 
-use Illuminate\Support\Facades\Auth;
-Route::middleware('auth')->group(function () {
-
-// Dashboard redirect based on role
-Route::get('/dashboard', function () {
-if (Auth::user()->role === 'admin') {
-return redirect()->route('admin.dashboard');
-}
-return redirect()->route('products.index');
-})->name('dashboard');
-// ... rest of your auth routes
 });
+Route::middleware(['auth', 'user'])
+->prefix('user')
+->name('user')
+->group(function () {
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 
+});
 Route::middleware(['auth', 'admin'])
 ->prefix('admin')
 ->name('admin.')
 ->group(function () {
+
+// Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])
 ->name('dashboard');
-// More admin routes will be added in future modules
-});
-
-Route::middleware('auth')->group(function () {
-    Route::get('/products', [ProductController::class, 'index'])
-        ->name('products.index');
+// Categories - full resource CRUD
+Route::resource('categories', CategoryController::class);
+// Products - full resource CRUD
+Route::resource('products', AdminProductController::class);
+// Orders - view and update status only
+Route::get('/orders', [AdminOrderController::class, 'index'])
+->name('orders.index');
+Route::get('/orders/{order}', [AdminOrderController::class, 'show'])
+->name('orders.show');
+Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])
+->name('orders.update');
 });
 
 require __DIR__.'/auth.php';

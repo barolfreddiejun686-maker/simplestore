@@ -17,4 +17,8 @@ public function orderItems()
 {
 return $this->hasMany(OrderItem::class);
 }
+public static function statuses(): array
+{
+    return ['pending', 'processing', 'completed', 'cancelled'];
+}
 }

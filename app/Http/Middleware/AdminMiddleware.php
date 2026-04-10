@@ -10,7 +10,7 @@ public function handle(Request $request, Closure $next): Response
 {
 // Check if user is logged in and is an admin
 if (!Auth::check() || Auth::user()->role !== 'admin') {
-return redirect()->route('products.index');
+    return redirect()->route('admin.dashboard');
 }
 return $next($request);
 }
