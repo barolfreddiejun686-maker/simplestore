@@ -1,5 +1,8 @@
 <?php
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -29,6 +32,7 @@ Route::middleware(['auth', 'user'])
 ->group(function () {
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 
+
 });
 Route::middleware(['auth', 'admin'])
 ->prefix('admin')
@@ -49,6 +53,30 @@ Route::get('/orders/{order}', [AdminOrderController::class, 'show'])
 ->name('orders.show');
 Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])
 ->name('orders.update');
+});
+// Public product routes - no login needed
+Route::get('/products', [ProductController::class, 'index'])
+->name('products.index');
+Route::get('/products/{product}', [ProductController::class, 'show'])
+->name('products.show');
+// Authenticated customer routes
+Route::middleware('auth')->group(function () {
+// Cart routes
+Route::get('/cart', [CartController::class, 'index'])
+->name('cart.index');
+Route::post('/cart/add/{product}', [CartController::class, 'add'])
+->name('cart.add');
+Route::patch('/cart/update/{productId}', [CartController::class, 'update'])
+->name('cart.update');
+Route::delete('/cart/remove/{productId}', [CartController::class, 'remove'])
+->name('cart.remove');
+Route::delete('/cart/clear', [CartController::class, 'clear'])
+->name('cart.clear');
+// Order history routes
+Route::get('/orders', [OrderController::class, 'index'])
+->name('orders.index');
+Route::get('/orders/{order}', [OrderController::class, 'show'])
+->name('orders.show');
 });
 
 require __DIR__.'/auth.php';

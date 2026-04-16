@@ -9,9 +9,9 @@
     @csrf
     @method('PUT')
 
-    <input name="name" value="{{ $product->name }}" class="w-full border p-2">
+    <input name="name" value="{{ $product->name }}" class="w-full border p-2 space-y-4">
 
-    <select name="category_id" class="w-full border p-2">
+    <select name="category_id" class="w-full border p-2 space-y-4">
         @foreach($categories as $category)
             <option value="{{ $category->id }}"
                 {{ $product->category_id == $category->id ? 'selected' : '' }}>

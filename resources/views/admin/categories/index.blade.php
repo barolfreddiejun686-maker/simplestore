@@ -12,12 +12,12 @@
 </div>
 
 <div class="bg-white p-6 rounded-lg shadow">
-    <table class="w-full">
+    <table class="w-full text-left">
         <thead>
             <tr class="border-b">
                 <th class="text-left py-2">Name</th>
                 <th class="text-left py-2">Description</th>
-                <th class="py-2">Actions</th>
+                <th class="text-left py-2">Actions</th>
             </tr>
         </thead>
         <tbody>
