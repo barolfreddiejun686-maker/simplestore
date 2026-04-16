@@ -19,6 +19,7 @@
 <a href="{{ route('admin.dashboard') }}"
 class="flex items-center gap-3 px-4 py-3 rounded-lg
 text-gray-300 hover:bg-gray-700 transition">
+Dashboard
 </a>
 <a href="{{ route('admin.orders.index') }}"
 class="flex items-center gap-3 px-4 py-3 rounded-lg

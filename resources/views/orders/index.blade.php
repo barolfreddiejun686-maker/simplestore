@@ -1,233 +1,184 @@
-{{-- resources/views/orders/index.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'My Orders')
 
 @section('content')
-<div class="orders-page">
+<div 
+    x-data="{
+        search: '',
+        status: 'all'
+    }"
+    class="max-w-6xl mx-auto px-4 py-10"
+>
 
-    <div class="page-header">
-        <h1>My Orders</h1>
-        <p class="header-sub">{{ $orders->total() }} order{{ $orders->total() !== 1 ? 's' : '' }} placed</p>
+    <!-- 📦 Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-black text-gray-800">My Orders</h1>
+        <p class="text-gray-500 text-sm">
+            {{ $orders->total() }} order{{ $orders->total() !== 1 ? 's' : '' }} placed
+        </p>
+    </div>
+
+    <!-- 🔍 Search + Filter -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+
+        <!-- Search -->
+        <input type="text"
+            x-model="search"
+            placeholder="Search Order ID..."
+            class="px-4 py-2 border rounded-xl w-full sm:w-64 focus:ring-2 focus:ring-blue-400">
+
+        <!-- Status Filters -->
+        @php
+            $statuses = ['all','pending','processing','shipped','delivered','cancelled'];
+        @endphp
+
+        <div class="flex flex-wrap gap-2">
+            @foreach($statuses as $s)
+            <button 
+                @click="status='{{ $s }}'"
+                :class="status==='{{ $s }}' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-100 text-gray-600'"
+                class="px-3 py-1 rounded-full text-xs capitalize transition">
+                {{ $s }}
+            </button>
+            @endforeach
+        </div>
+
     </div>
 
     @if ($orders->isEmpty())
-        <div class="empty-state">
-            <div class="empty-icon">
-                <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
-                </svg>
-            </div>
-            <h3>No orders yet</h3>
-            <p>When you place an order, it will show up here.</p>
-            <a href="{{ route('products.index') }}" class="btn-primary">Start Shopping</a>
-        </div>
-    @else
-        <div class="orders-table-wrap">
-            <table class="orders-table">
-                <thead>
-                    <tr>
-                        <th>Order</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Items</th>
-                        <th>Total</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($orders as $order)
-                    <tr>
-                        <td class="order-num">#{{ $order->id }}</td>
-                        <td class="order-date">{{ $order->created_at->format('M d, Y') }}</td>
-                        <td>
-                            <span class="badge badge--{{ strtolower($order->status) }}">
-                                {{ ucfirst($order->status) }}
-                            </span>
-                        </td>
-                        <td class="order-items-count">
-                            {{ $order->orderItems->count() ?? '—' }}
-                            item{{ ($order->orderItems->count() ?? 0) !== 1 ? 's' : '' }}
-                        </td>
-                        <td class="order-total">${{ number_format($order->total_amount, 2) }}</td>
-                        <td class="order-action">
-                            <a href="{{ route('orders.show', $order) }}" class="btn-view">
-                                View
-                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
 
-        @if ($orders->hasPages())
-        <div class="pagination-wrap">
-            {{ $orders->links() }}
-        </div>
-        @endif
+    <!-- 💤 Empty -->
+    <div class="text-center py-20 border rounded-xl bg-gray-50">
+        <p class="text-gray-400 text-lg mb-4">No orders yet 📦</p>
+        <a href="{{ route('products.index') }}"
+            class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition">
+            Start Shopping
+        </a>
+    </div>
+
+    @else
+
+    <!-- 🧾 Table -->
+    <div class="overflow-x-auto bg-white rounded-2xl shadow-sm">
+
+        <table class="w-full text-sm">
+
+            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                <tr>
+                    <th class="px-4 py-3 text-left">Order</th>
+                    <th class="px-4 py-3 text-left">Date</th>
+                    <th class="px-4 py-3 text-left">Status</th>
+                    <th class="px-4 py-3 text-left">Items</th>
+                    <th class="px-4 py-3 text-left">Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach ($orders as $order)
+                @php $status = strtolower($order->status); @endphp
+
+                <tr 
+                    x-data="{ open:false }"
+                    x-show="
+                        (status === 'all' || status === '{{ $status }}') &&
+                        ('{{ $order->id }}'.includes(search))
+                    "
+                    x-cloak
+                    class="border-b hover:bg-gray-50 transition"
+                >
+
+                    <!-- Order -->
+                    <td class="px-4 py-3 font-semibold text-gray-800">
+                        #{{ $order->id }}
+                    </td>
+
+                    <!-- Date -->
+                    <td class="px-4 py-3 text-gray-500">
+                        {{ $order->created_at->format('M d, Y') }}
+                    </td>
+
+                    <!-- Status -->
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium
+                            @switch($status)
+                                @case('pending') bg-yellow-100 text-yellow-700 @break
+                                @case('processing') bg-blue-100 text-blue-700 @break
+                                @case('shipped') bg-purple-100 text-purple-700 @break
+                                @case('delivered') bg-green-100 text-green-700 @break
+                                @case('cancelled') bg-red-100 text-red-700 @break
+                            @endswitch
+                        ">
+                            {{ ucfirst($order->status) }}
+                        </span>
+                    </td>
+
+                    <!-- Items -->
+                    <td class="px-4 py-3">
+                        {{ $order->orderItems->count() ?? 0 }}
+                    </td>
+
+                    <!-- Total -->
+                    <td class="px-4 py-3 font-semibold">
+                        ₱{{ number_format($order->total_amount, 2) }}
+                    </td>
+
+                    <!-- Action -->
+                    <td class="px-4 py-3 text-right space-x-2">
+
+                        <button 
+                            @click="open=!open"
+                            class="text-gray-500 hover:text-black text-xs">
+                            Details
+                        </button>
+
+                        <a href="{{ route('orders.show', $order) }}"
+                            class="text-blue-500 hover:underline text-xs">
+                            View →
+                        </a>
+                    </td>
+
+                </tr>
+
+                <!-- 🔽 Expand Row -->
+                <tr x-show="open" x-transition x-cloak>
+                    <td colspan="6" class="bg-gray-50 px-6 py-4 text-sm">
+
+                        <div class="space-y-2">
+                            @foreach($order->orderItems ?? [] as $item)
+                            <div class="flex justify-between">
+                                <span>{{ $item->product->name ?? 'Product' }}</span>
+                                <span>
+                                    x{{ $item->quantity }} • ₱{{ number_format($item->price, 2) }}
+                                </span>
+                            </div>
+                            @endforeach
+                        </div>
+
+                    </td>
+                </tr>
+
+                @endforeach
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-6">
+        {{ $orders->links() }}
+    </div>
+
     @endif
 
 </div>
 
+<!-- Prevent flicker -->
 <style>
-.orders-page {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 24px;
-}
-
-.page-header {
-    margin-bottom: 32px;
-}
-
-.page-header h1 {
-    font-size: 26px;
-    font-weight: 600;
-    color: #111;
-    margin: 0 0 4px;
-}
-
-.header-sub {
-    font-size: 14px;
-    color: #6b7280;
-    margin: 0;
-}
-
-/* Empty state */
-.empty-state {
-    text-align: center;
-    padding: 80px 24px;
-    border: 1px dashed #e5e7eb;
-    border-radius: 12px;
-    background: #fafafa;
-}
-
-.empty-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 72px;
-    height: 72px;
-    background: #f3f4f6;
-    border-radius: 50%;
-    color: #9ca3af;
-    margin-bottom: 20px;
-}
-
-.empty-state h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #111;
-    margin: 0 0 8px;
-}
-
-.empty-state p {
-    font-size: 14px;
-    color: #6b7280;
-    margin: 0 0 24px;
-}
-
-.btn-primary {
-    display: inline-block;
-    padding: 10px 22px;
-    background: #111;
-    color: #fff;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: background .15s;
-}
-.btn-primary:hover { background: #333; }
-
-/* Table */
-.orders-table-wrap {
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.orders-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-
-.orders-table thead tr {
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.orders-table th {
-    padding: 12px 20px;
-    text-align: left;
-    font-size: 12px;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-}
-
-.orders-table tbody tr {
-    border-bottom: 1px solid #f3f4f6;
-    transition: background .1s;
-}
-
-.orders-table tbody tr:last-child { border-bottom: none; }
-.orders-table tbody tr:hover { background: #f9fafb; }
-
-.orders-table td {
-    padding: 16px 20px;
-    color: #374151;
-    vertical-align: middle;
-}
-
-.order-num   { font-weight: 600; color: #111; font-family: monospace; font-size: 13px; }
-.order-date  { color: #6b7280; }
-.order-total { font-weight: 600; color: #111; }
-
-/* Status badges */
-.badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.badge--pending    { background: #fef3c7; color: #92400e; }
-.badge--processing { background: #dbeafe; color: #1e40af; }
-.badge--shipped    { background: #ede9fe; color: #5b21b6; }
-.badge--delivered  { background: #d1fae5; color: #065f46; }
-.badge--cancelled  { background: #fee2e2; color: #991b1b; }
-
-/* View link */
-.btn-view {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #111;
-    text-decoration: none;
-    padding: 6px 14px;
-    border: 1px solid #e5e7eb;
-    border-radius: 7px;
-    transition: border-color .15s, background .15s;
-    white-space: nowrap;
-}
-.btn-view:hover { background: #f3f4f6; border-color: #d1d5db; }
-
-/* Pagination */
-.pagination-wrap {
-    margin-top: 24px;
-    display: flex;
-    justify-content: center;
-}
+[x-cloak] { display:none !important; }
 </style>
 @endsection

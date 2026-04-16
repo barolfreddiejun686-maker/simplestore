@@ -16,7 +16,10 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    if (Auth::user()->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect()->route('products.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -25,15 +28,22 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     // Dashboard redirect based on role
 
+    // Checkout routes
+Route::get('/checkout', [CheckoutController::class, 'index'])
+->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])
+->name('checkout.store');
+Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])
+->name('checkout.success');
+
 });
 Route::middleware(['auth', 'user'])
 ->prefix('user')
 ->name('user')
 ->group(function () {
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-
-
 });
+
 Route::middleware(['auth', 'admin'])
 ->prefix('admin')
 ->name('admin.')

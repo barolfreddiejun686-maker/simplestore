@@ -1,146 +1,180 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div 
+    x-data="cartHandler()"
+    class="max-w-6xl mx-auto px-4 py-8"
+>
 
-    <h2 class="mb-4">My Cart</h2>
+    <!-- 🛒 Header -->
+    <h2 class="text-3xl font-black text-gray-800 mb-6">My Cart</h2>
 
-    {{-- Success / Error Messages --}}
+    <!-- Alerts -->
     @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
+    <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-xl">
+        {{ session('success') }}
+    </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
+    <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-xl">
+        {{ session('error') }}
+    </div>
     @endif
 
     @if(count($cart) > 0)
 
-        <table class="table table-bordered w-full">
-            <thead>
-                <tr>
-                    <th class="py-3 px-4">Image</th>
-                    <th class="py-3 px-4">Product</th>
-                    <th class="py-3 px-4">Price</th>
-                    <th width="150">Quantity</th>
-                    <th class="py-3 px-4">Subtotal</th>
-                    <th >Action</th>
-                </tr>
-            </thead>
+    <div class="grid lg:grid-cols-3 gap-6">
 
-            <tbody>
-                @foreach($cart as $id => $item)
-                    <tr>
+        <!-- 🧾 Cart Items -->
+        <div class="lg:col-span-2 space-y-4">
 
-                        {{-- Image --}}
-                        <td>
-                            @if($item['image'])
-                                <img src="{{ asset('storage/' . $item['image']) }}"
-                                     width="60"
-                                     height="60"
-                                     style="object-fit:cover;">
-                            @else
-                                <div class="img-fallback">
-                                    No Image
-                                </div>
-                            @endif
-                        </td>
+            @foreach($cart as $id => $item)
+            <div 
+                x-data="{ qty: {{ $item['quantity'] }} }"
+                class="bg-white rounded-2xl shadow-sm p-4 flex gap-4 items-center hover:shadow-md transition"
+            >
 
-                        {{-- Product Name --}}
-                        <td>
-                            {{ $item['name'] }}
-                        </td>
+                <!-- Image -->
+                @if($item['image'])
+                <img src="{{ asset('storage/' . $item['image']) }}"
+                    class="w-20 h-20 object-cover rounded-lg">
+                @else
+                <div class="w-20 h-20 bg-gray-100 flex items-center justify-center text-gray-400 text-xs rounded-lg">
+                    No Image
+                </div>
+                @endif
 
-                        {{-- Price --}}
-                        <td>
-                            ₱{{ number_format($item['price'], 2) }}
-                        </td>
+                <!-- Info -->
+                <div class="flex-1">
+                    <h3 class="font-semibold text-gray-800">
+                        {{ $item['name'] }}
+                    </h3>
 
-                        {{-- Quantity Update --}}
-                        <td>
-                            <form action="{{ route('cart.update', $id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
+                    <p class="text-gray-400 text-sm">
+                        ₱{{ number_format($item['price'], 2) }}
+                    </p>
 
-                                <input type="number"
-                                       name="quantity"
-                                       value="{{ $item['quantity'] }}"
-                                       min="1"
-                                       class="form-control mb-1">
+                    <!-- Quantity Stepper -->
+                    <div class="flex items-center gap-2 mt-2">
 
-                                <button type="submit" class="btn btn-sm btn-primary w-100">
-                                    Update
-                                </button>
-                            </form>
-                        </td>
+                        <button 
+                            @click="if(qty>1) qty--"
+                            class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                            -
+                        </button>
 
-                        {{-- Subtotal --}}
-                        <td>
-                            ₱{{ number_format($item['subtotal'], 2) }}
-                        </td>
+                        <input type="number"
+                            x-model="qty"
+                            min="1"
+                            class="w-14 text-center border rounded">
 
-                        {{-- Remove --}}
-                        <td>
-                            <form action="{{ route('cart.remove', $id) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
+                        <button 
+                            @click="qty++"
+                            class="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                            +
+                        </button>
 
-                                <button type="submit" class="btn btn-sm btn-danger w-100">
-                                    Remove
-                                </button>
-                            </form>
-                        </td>
+                        <!-- Update -->
+                        <form action="{{ route('cart.update', $id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="quantity" :value="qty">
 
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+                            <button type="submit"
+                                class="ml-2 text-blue-500 text-sm hover:underline">
+                                Update
+                            </button>
+                        </form>
 
-        {{-- Total --}}
-        <div class="text-end">
-            <h4>Total: ₱{{ number_format($total, 2) }}</h4>
+                    </div>
+                </div>
+
+                <!-- Subtotal -->
+                <div class="text-right">
+                    <p class="font-bold text-gray-800">
+                        ₱{{ number_format($item['subtotal'], 2) }}
+                    </p>
+
+                    <!-- Remove -->
+                    <form action="{{ route('cart.remove', $id) }}" method="POST"
+                        onsubmit="return confirm('Remove this item?')">
+                        @csrf
+                        @method('DELETE')
+
+                        <button type="submit"
+                            class="text-red-500 text-sm hover:underline mt-2">
+                            Remove
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+            @endforeach
+
         </div>
 
-        {{-- Actions --}}
-        <div class="d-flex justify-content-between mt-3">
+        <!-- 💳 Summary -->
+        <div class="bg-white rounded-2xl shadow-md p-6 h-fit sticky top-6">
 
-            <form action="{{ route('cart.clear') }}" method="POST">
+            <h3 class="font-semibold text-gray-800 mb-4">Order Summary</h3>
+
+            <div class="flex justify-between mb-2 text-gray-600">
+                <span>Items</span>
+                <span>{{ count($cart) }}</span>
+            </div>
+
+            <div class="flex justify-between mb-4 text-lg font-bold">
+                <span>Total</span>
+                <span class="text-green-600">
+                    ₱{{ number_format($total, 2) }}
+                </span>
+            </div>
+
+            <!-- Checkout -->
+            <a href="{{ route('checkout.index') }}"
+                class="block w-full text-center bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition mb-3">
+                Proceed to Checkout
+            </a>
+
+            <!-- Clear Cart -->
+            <form action="{{ route('cart.clear') }}" method="POST"
+                onsubmit="return confirm('Clear entire cart?')">
                 @csrf
                 @method('DELETE')
 
-                <button type="submit" class="btn btn-warning">
+                <button type="submit"
+                    class="w-full py-2 text-sm text-red-500 border border-red-300 rounded-xl hover:bg-red-50 transition">
                     Clear Cart
                 </button>
             </form>
 
-            <a href="{{ route('orders.index') }}" class="btn btn-success">
-                Proceed to Checkout
-            </a>
-
         </div>
 
+    </div>
+
     @else
-        <p>Your cart is empty.</p>
+
+    <!-- 💤 Empty State -->
+    <div class="text-center py-20">
+        <p class="text-gray-400 text-lg mb-4">Your cart is empty 🛒</p>
+
+        <a href="{{ route('products.index') }}"
+            class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition">
+            Start Shopping
+        </a>
+    </div>
+
     @endif
 
 </div>
 
-{{-- Styles --}}
-<style>
-.img-fallback {
-    width: 60px;
-    height: 60px;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #9ca3af;
-    font-size: 12px;
+<!-- Alpine Helper -->
+<script>
+function cartHandler() {
+    return {
+        loading: false
+    }
 }
-</style>
-
+</script>
 @endsection
