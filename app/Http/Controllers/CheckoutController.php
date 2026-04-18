@@ -1,5 +1,7 @@
 <?php
 namespace App\Http\Controllers;
+use App\Mail\OrderPlaced;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -60,9 +62,13 @@ if ($product) {
 $product->decrement('stock', $item['quantity']);
 }
 }
+
 // Clear the cart from the session
 session()->forget('cart');
-return redirect()->route('checkout.success', $order->id)
+// Send confirmation email
+Mail::to($order->email)->queue(new OrderPlaced($order));
+// Redirect to Xendit payment page
+return redirect()->route('payment.pay', $order)
 ->with('success', 'Order placed successfully!');
 }
 // Show the order confirmation page

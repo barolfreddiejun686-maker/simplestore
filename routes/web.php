@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
@@ -88,5 +89,17 @@ Route::get('/orders', [OrderController::class, 'index'])
 Route::get('/orders/{order}', [OrderController::class, 'show'])
 ->name('orders.show');
 });
+// Temporary email preview - remove before deploying
+Route::get('/email-preview', function () {
+    $order = \App\Models\Order::with('orderItems.product')->latest()->first();
+    return new \App\Mail\OrderPlaced($order);
+    });
 
+    // Inside the auth middleware group
+Route::get('/payment/{order}', [PaymentController::class, 'pay'])
+->name('payment.pay');
+Route::get('/payment/{order}/success', [PaymentController::class, 'success'])
+->name('payment.success');
+Route::get('/payment/{order}/failure', [PaymentController::class, 'failure'])
+->name('payment.failure');
 require __DIR__.'/auth.php';
