@@ -11,34 +11,39 @@
         <h2 class="text-3xl font-black text-gray-800">Products</h2>
     </div>
 
-    <!-- 🔍 Search + Filter -->
-    <form method="GET" action="{{ route('products.index') }}" 
-          class="mb-6 bg-white p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-3">
+ <!-- 🔍 Search + Filter (Vertically Aligned) -->
+<form method="GET" action="{{ route('products.index') }}" 
+    class="mb-6 bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3">
 
-        <!-- Search -->
-        <input type="text"
-            name="search"
-            placeholder="🔍 Search products..."
-            value="{{ request('search') }}"
-            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none">
+    <!-- Search -->
+    <input type="text"
+        name="search"
+        placeholder="🔍 Search products..."
+        value="{{ request('search') }}"
+        class="flex-1 h-11 px-4 border border-gray-200 rounded-xl
+               focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
 
-        <!-- Category -->
-        <select name="category"
-            class="px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-400 outline-none">
-            <option value="">All Categories</option>
-            @foreach($categories as $category)
-            <option value="{{ $category->id }}"
-                @selected(request('category')==$category->id)>
-                {{ $category->name }}
-            </option>
-            @endforeach
-        </select>
+    <!-- Category -->
+    <select name="category"
+        class="w-56 h-11 px-4 border border-gray-200 rounded-xl
+               focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+        <option value="">All Categories</option>
+        @foreach($categories as $category)
+        <option value="{{ $category->id }}"
+            @selected(request('category')==$category->id)>
+            {{ $category->name }}
+        </option>
+        @endforeach
+    </select>
 
-        <button type="submit"
-            class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition">
-            Filter
-        </button>
-    </form>
+    <!-- Button -->
+    <button type="submit"
+        class="h-11 px-6 bg-blue-600 text-white rounded-xl
+               hover:bg-blue-700 transition font-medium whitespace-nowrap">
+        Filter
+    </button>
+
+</form>
 
     <!-- 🛒 Product Grid -->
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -74,7 +79,7 @@
                 <div class="flex items-center justify-between mb-3">
                     <a href="{{ route('products.show', $product) }}"
                         class="text-blue-500 text-sm hover:underline">
-                        View
+                        View Details
                     </a>
                 </div>
 
@@ -115,7 +120,7 @@
                         <span x-show="added">✔ Added!</span>
                     </button>
                 </form>
-
+                
             </div>
         </div>
 

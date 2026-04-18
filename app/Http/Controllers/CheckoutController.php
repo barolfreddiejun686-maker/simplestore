@@ -81,4 +81,21 @@ abort(403);
 $order->load('orderItems.product');
 return view('checkout.success', compact('order'));
 }
+public function direct(Request $request, Product $product)
+{
+    $quantity = $request->quantity ?? 1;
+
+    session([
+        'checkout_items' => [
+            [
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'quantity' => $quantity,
+            ]
+        ]
+    ]);
+
+    return redirect()->route('checkout.index');
+}
 }

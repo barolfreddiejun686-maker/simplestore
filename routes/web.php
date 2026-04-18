@@ -36,6 +36,8 @@ Route::post('/checkout', [CheckoutController::class, 'store'])
 ->name('checkout.store');
 Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])
 ->name('checkout.success');
+Route::post('/checkout/direct/{product}', [CheckoutController::class, 'direct'])
+    ->name('checkout.direct');
 
 });
 Route::middleware(['auth', 'user'])
