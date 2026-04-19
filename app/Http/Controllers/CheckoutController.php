@@ -85,17 +85,16 @@ public function direct(Request $request, Product $product)
 {
     $quantity = $request->quantity ?? 1;
 
-    session([
-        'checkout_items' => [
-            [
-                'product_id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->price,
-                'quantity' => $quantity,
-            ]
+    $request->session()->put('cart', [
+        $product->id => [
+            'name'     => $product->name,
+            'price'    => $product->price,
+            'quantity' => $quantity,
+            'subtotal' => $product->price * $quantity,
+            'image'    => $product->image,
         ]
     ]);
-
+    
     return redirect()->route('checkout.index');
 }
 }

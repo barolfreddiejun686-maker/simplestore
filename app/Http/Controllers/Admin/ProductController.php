@@ -8,15 +8,18 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 class ProductController extends Controller
 {
-public function index()
+// ✅ NEW — paste this instead
+public function index(Request $request)
 {
-$products = Product::with('category')->paginate(10);
-return view('admin.products.index', compact('products'));
-}
-public function create()
-{
-$categories = Category::all();
-return view('admin.products.create', compact('categories'));
+    $categories = Category::all();
+
+    $products = Product::with('category')
+        ->when($request->category_id, function ($query) use ($request) {
+            $query->where('category_id', $request->category_id);
+        })
+        ->paginate(10);
+
+    return view('admin.products.index', compact('products', 'categories'));
 }
 public function store(Request $request)
 {

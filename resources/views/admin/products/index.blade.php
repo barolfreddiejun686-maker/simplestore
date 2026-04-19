@@ -10,6 +10,19 @@
             + Add Product
         </a>
     </div>
+    <div class="bg-white p-4 rounded-lg shadow mb-4">
+    <form method="GET" action="{{ route('admin.products.index') }}">
+    <select name="category_id" onchange="this.form.submit()" class="border rounded p-2 text-sm">
+        <option value="">All Categories</option>
+        @foreach($categories as $category)
+            <option value="{{ $category->id }}"
+                {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                {{ $category->name }}
+            </option>
+        @endforeach
+    </select>
+</form>
+    </div>
 
     @if(session('success'))
     <div class="bg-green-100 text-green-800 px-4 py-2 rounded mb-4">

@@ -14,7 +14,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.categories.update', $category) }}"
+    <form action="{{ route('admin.categories.edit', $category) }}"
           method="POST"
           class="bg-white p-6 rounded shadow space-y-4 max-w-2xl">
         @csrf

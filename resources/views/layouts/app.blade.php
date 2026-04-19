@@ -27,7 +27,7 @@ $cartCount = array_sum(
 array_column(session()->get('cart', []), 'quantity')
 );
 @endphp
-Cart
+🛒Cart
 @if($cartCount > 0)
 <span class="bg-blue-600 text-white text-xs
 rounded-full px-2 py-0.5 ml-1">
